@@ -1,6 +1,3 @@
-# Build and deploy the Vite app to GitHub Pages.
-# After first run: Repo → Settings → Pages → Build and deployment → Source: GitHub Actions.
-
 name: Deploy to GitHub Pages
 
 on:
@@ -21,19 +18,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: npm
+
+      - uses: actions/configure-pages@v5
 
       - name: Install and build
         run: |
           npm ci
           npm run build
         env:
-          # https://eackroyd.github.io/super-inspect-demo/
           VITE_BASE: /super-inspect-demo/
 
       - uses: actions/upload-pages-artifact@v3
