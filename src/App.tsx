@@ -1,4 +1,4 @@
-import { useMemo, useState, type ComponentType, type CSSProperties } from "react";
+import { useRef, useState, type ComponentType, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -769,50 +769,63 @@ function ScoreCard({
 
 function ImpactHero({
   item,
-  overallScore,
-  projectedOverall,
 }: {
   item: DetailSection;
-  overallScore: number;
-  projectedOverall: number;
 }) {
   const delta = item.projected - item.score;
+  const pillarBreakdown = sections
+    .filter((section) => section.id !== item.id)
+    .map((section) => ({
+      id: section.id,
+      title: section.shortTitle,
+      uplift: section.projected - section.score,
+      color: section.color,
+    }));
+
   return (
     <Card className="rounded-[32px] border-zinc-200 shadow-sm">
       <CardContent className="p-7">
-        <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="flex items-center gap-3">
-              <Badge className="rounded-full bg-rose-100 text-rose-700 hover:bg-rose-100">Impact score</Badge>
-              <Badge variant="outline" className="rounded-full">
-                Primary value driver
-              </Badge>
-            </div>
-            <h2 className="mt-4 text-4xl font-semibold tracking-tight">
-              Highlight the impact Channel Factory can create
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
-              This lead module brings the proprietary impact score above the rest of the audit so it becomes the
-              headline story: current impact from historical Meta activity, projected impact with Channel Factory
-              products, and the account score that supports that uplift.
-            </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              <MetricTile label="Current impact" value={item.score} />
-              <MetricTile label="Projected impact" value={item.projected} />
-              <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
-                <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Impact delta</div>
-                <div className="mt-2 text-2xl font-semibold text-emerald-600">+{delta}</div>
-                <div className="mt-1 text-sm text-zinc-500">Modeled uplift opportunity</div>
-              </div>
-            </div>
+        <div className="max-w-3xl">
+          <div className="flex items-center gap-3">
+            <Badge className="rounded-full bg-rose-100 text-rose-700 hover:bg-rose-100">Impact score</Badge>
+            <Badge variant="outline" className="rounded-full">
+              Primary value driver
+            </Badge>
           </div>
-          <div className="grid w-full gap-4 sm:grid-cols-3 xl:max-w-xl">
-            <MetricTile label="Overall score" value={overallScore} />
-            <MetricTile label="Projected score" value={projectedOverall} />
+          <h2 className="mt-4 text-4xl font-semibold tracking-tight">
+            Highlight the impact Channel Factory can create
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
+            This lead module brings the proprietary impact score above the rest of the audit so it becomes the
+            headline story: current impact from historical Meta activity, projected impact with Channel Factory
+            products, and the account score that supports that uplift.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricTile label="Current impact" value={item.score} />
+            <MetricTile label="Projected impact" value={item.projected} />
+            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Impact delta</div>
+              <div className="mt-2 text-2xl font-semibold text-emerald-600">+{delta}</div>
+              <div className="mt-1 text-sm text-zinc-500">Modeled uplift opportunity</div>
+            </div>
             <div className="rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Headroom</div>
-              <div className="mt-2 text-2xl font-semibold text-zinc-900">
-                +{projectedOverall - overallScore}
+              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                Projected improvement mix
+              </div>
+              <div className="mt-3 space-y-2">
+                {pillarBreakdown.map((pillar) => (
+                  <div key={pillar.id} className="flex items-center justify-between gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: pillar.color }}
+                        aria-hidden
+                      />
+                      <span className="text-zinc-600">{pillar.title}</span>
+                    </div>
+                    <span className="font-medium text-zinc-900">+{pillar.uplift}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -859,7 +872,14 @@ function RadarTooltip({
   );
 }
 
+function getAssessmentResult(detail: string) {
+  const passSignals = [/strong/i, /clear/i, /effective/i, /healthy/i, /complete/i, /balanced/i];
+  return passSignals.some((pattern) => pattern.test(detail)) ? "pass" : "fail";
+}
+
 function DefaultExpandedPanel({ section }: { section: DetailSection }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div className="rounded-[28px] border border-zinc-100 bg-zinc-50/70 p-5">
       <div className="mb-4 flex items-center justify-between gap-4">
@@ -873,16 +893,43 @@ function DefaultExpandedPanel({ section }: { section: DetailSection }) {
           {section.details?.length || 0} diagnostic checks
         </Badge>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {(section.details || []).map((d) => (
-          <div
-            key={d}
-            className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm leading-6 text-zinc-700 shadow-sm"
-          >
-            {d}
-          </div>
-        ))}
-      </div>
+      <button
+        type="button"
+        onClick={() => setIsExpanded((value) => !value)}
+        className="flex w-full items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left text-sm text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50"
+      >
+        <span>{isExpanded ? "Hide assessment criteria" : "Show assessment criteria"}</span>
+        <span className="font-medium text-zinc-900">{isExpanded ? "Collapse" : "Expand"}</span>
+      </button>
+      {isExpanded ? (
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {(section.details || []).map((detail) => {
+            const isPass = getAssessmentResult(detail) === "pass";
+
+            return (
+              <div
+                key={detail}
+                className={`rounded-2xl border p-4 text-sm leading-6 shadow-sm ${
+                  isPass
+                    ? "border-emerald-200 bg-emerald-50/70 text-emerald-900"
+                    : "border-rose-200 bg-rose-50/70 text-rose-950"
+                }`}
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] ${
+                      isPass ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                    }`}
+                  >
+                    {isPass ? "Pass" : "Fail"}
+                  </span>
+                </div>
+                <p>{detail}</p>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -945,12 +992,12 @@ function SectionExpandedPanel({ section }: { section: DetailSection }) {
     ) : null;
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="space-y-4">
         {leadBlock}
         {breakdownBlock}
       </div>
       {cfg.insights && cfg.insightIcon && (cfg.leadCards || cfg.creativeAds) ? (
-        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
           <InsightList
             title={cfg.insightTitle || "Insights"}
             subtitle={cfg.insightSubtitle || ""}
@@ -973,10 +1020,12 @@ function RadarRollup({
   sections: sectionList,
   hovered,
   setHovered,
+  onSelect,
 }: {
   sections: DetailSection[];
   hovered: DetailSection;
   setHovered: (id: string) => void;
+  onSelect: (id: string) => void;
 }) {
   const data: RadarDatum[] = sectionList.map((s) => ({
     id: s.id,
@@ -989,7 +1038,7 @@ function RadarRollup({
   }));
   return (
     <Card className="overflow-hidden rounded-[28px] border-zinc-200 shadow-sm">
-      <CardHeader className="pb-2">
+      <CardHeader className="px-6 pb-2 pt-5 sm:px-7 sm:pt-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <CardTitle className="text-xl">How the overall score rolls up</CardTitle>
@@ -1025,6 +1074,10 @@ function RadarRollup({
                     if (match) setHovered(match.id);
                   }}
                   onMouseLeave={() => setHovered("impact")}
+                  onClick={(state: RadarMouseState) => {
+                    const match = sectionList.find((s) => s.shortTitle === state?.activeLabel);
+                    if (match) onSelect(match.id);
+                  }}
                 >
                   <defs>
                     <linearGradient id="projectedFill" x1="0" y1="0" x2="1" y2="1">
@@ -1080,6 +1133,13 @@ function RadarRollup({
                   +{hovered.projected - hovered.score}
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => onSelect(hovered.id)}
+                className="rounded-3xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-left text-sm text-zinc-600 transition-colors hover:bg-zinc-100"
+              >
+                {hovered.id === "impact" ? "Return to the Impact lead section" : `Jump to ${hovered.title} details`}
+              </button>
             </div>
           </div>
         </div>
@@ -1091,23 +1151,30 @@ function RadarRollup({
 export default function App() {
   const [selected, setSelected] = useState("targeting");
   const [hoveredAxis, setHoveredAxis] = useState("impact");
+  const detailSectionRef = useRef<HTMLDivElement | null>(null);
   const valid = validateSections(sections);
   const safeSections = valid ? sections : [];
   const impact = safeSections.find((s) => s.id === "impact") || sections[0];
   const secondary = safeSections.filter((s) => s.id !== "impact");
   const selectedSection = secondary.find((s) => s.id === selected) || secondary[0] || impact;
   const hovered = safeSections.find((s) => s.id === hoveredAxis) || impact;
-  const overallScore = useMemo(
-    () => Math.round(safeSections.reduce((a, s) => a + s.score * s.weight, 0)),
-    [safeSections]
-  );
-  const projectedOverall = useMemo(
-    () => Math.round(safeSections.reduce((a, s) => a + s.projected * s.weight, 0)),
-    [safeSections]
-  );
   const biggestGap = [...safeSections].sort(
     (a, b) => b.projected - b.score - (a.projected - a.score)
   )[0];
+
+  const handleRadarSelect = (id: string) => {
+    setHoveredAxis(id);
+
+    if (id === "impact") {
+      document.getElementById("impact-hero")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    setSelected(id);
+    requestAnimationFrame(() => {
+      detailSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   if (!valid) {
     return (
@@ -1149,8 +1216,16 @@ export default function App() {
             </div>
           </div>
         </div>
-        <ImpactHero item={impact} overallScore={overallScore} projectedOverall={projectedOverall} />
+        <div id="impact-hero">
+          <ImpactHero item={impact} />
+        </div>
         <div className="space-y-6">
+          <RadarRollup
+            sections={safeSections}
+            hovered={hovered}
+            setHovered={setHoveredAxis}
+            onSelect={handleRadarSelect}
+          />
           <div className="grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-5">
             {secondary.map((item) => (
               <div key={item.id} className="h-full min-h-[265px]">
@@ -1161,6 +1236,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             <motion.div
               key={selectedSection.id}
+              ref={detailSectionRef}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -1210,7 +1286,6 @@ export default function App() {
               </Card>
             </motion.div>
           </AnimatePresence>
-          <RadarRollup sections={safeSections} hovered={hovered} setHovered={setHoveredAxis} />
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="h-full rounded-[28px] border-zinc-200 shadow-sm">
               <CardHeader>
