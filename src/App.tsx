@@ -2,6 +2,8 @@ import { useRef, useState, type ComponentType, type CSSProperties } from "react"
 import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import cfLogoWordmark from "./assets/CF_logo.png";
+import cfLogoRed from "./assets/cf-logo-red.png";
 import {
   RadarChart,
   Radar,
@@ -95,25 +97,18 @@ type PanelConfig = {
   insightIcon?: IconType;
 };
 
-const sections: DetailSection[] = [
-  {
-    id: "impact",
-    title: "Impact",
-    shortTitle: "Impact",
-    score: 68,
-    projected: 83,
-    weight: 0.25,
-    color: "#e11d48",
-    light: "#ffe4e6",
-    summary:
-      "Measures impacted users generated from past Meta activity, and the uplift CF products can unlock.",
-  },
+type ClientParameterGroup = {
+  label: string;
+  items: string[];
+};
+
+const supportingSections: DetailSection[] = [
   {
     id: "targeting",
     title: "Targeting Strategy",
     shortTitle: "Targeting",
     score: 61,
-    projected: 78,
+    projected: 72,
     weight: 0.15,
     color: "#0ea5e9",
     light: "#e0f2fe",
@@ -144,7 +139,7 @@ const sections: DetailSection[] = [
     title: "Campaign / Ad Set Structure",
     shortTitle: "Structure",
     score: 57,
-    projected: 74,
+    projected: 71,
     weight: 0.15,
     color: "#6366f1",
     light: "#e0e7ff",
@@ -171,7 +166,7 @@ const sections: DetailSection[] = [
     title: "Creative Strategies",
     shortTitle: "Creative",
     score: 64,
-    projected: 81,
+    projected: 76,
     weight: 0.15,
     color: "#8b5cf6",
     light: "#f3e8ff",
@@ -203,7 +198,7 @@ const sections: DetailSection[] = [
     title: "Optimization Strategies",
     shortTitle: "Optimization",
     score: 59,
-    projected: 77,
+    projected: 72,
     weight: 0.15,
     color: "#f59e0b",
     light: "#fef3c7",
@@ -235,7 +230,7 @@ const sections: DetailSection[] = [
     title: "Measurement",
     shortTitle: "Measurement",
     score: 54,
-    projected: 79,
+    projected: 74,
     weight: 0.15,
     color: "#10b981",
     light: "#d1fae5",
@@ -264,16 +259,33 @@ const sections: DetailSection[] = [
   },
 ];
 
-const actionData = [
-  { name: "Measurement", value: 25 },
-  { name: "Structure", value: 19 },
-  { name: "Optimization", value: 18 },
-  { name: "Targeting", value: 17 },
-  { name: "Creative", value: 12 },
-  { name: "Impact", value: 9 },
-];
+const rawImpactCurrent = supportingSections.reduce((sum, section) => sum + section.score, 0) / supportingSections.length;
+const rawImpactProjected =
+  supportingSections.reduce((sum, section) => sum + section.projected, 0) / supportingSections.length;
 
-const barFillColors = ["#10b981", "#6366f1", "#f59e0b", "#0ea5e9", "#8b5cf6", "#e11d48"];
+const impactSection: DetailSection = {
+  id: "impact",
+  title: "Impact",
+  shortTitle: "Impact",
+  score: Math.round(rawImpactCurrent + 11),
+  projected: Math.round(rawImpactProjected + 10),
+  weight: 0.25,
+  color: "#e11d48",
+  light: "#ffe4e6",
+  summary:
+    "Represents the normalized combined effect of improvements across targeting, structure, creative, optimization, and measurement.",
+};
+
+const sections: DetailSection[] = [impactSection, ...supportingSections];
+
+const actionData = [...supportingSections]
+  .map((section) => ({
+    name: section.shortTitle,
+    value: section.projected - section.score,
+  }))
+  .sort((a, b) => b.value - a.value);
+
+const barFillColors = ["#10b981", "#6366f1", "#f59e0b", "#8b5cf6", "#0ea5e9"];
 
 const creativeAds: CreativeAd[] = [
   {
@@ -515,6 +527,21 @@ const fixes: { title: string; text: string; icon: IconType }[] = [
   },
 ];
 
+const clientParameterGroups: ClientParameterGroup[] = [
+  {
+    label: "Goals",
+    items: ["Scale qualified new-customer acquisition", "Improve blended CPA efficiency", "Grow prospecting volume"],
+  },
+  {
+    label: "Targeting Priorities",
+    items: ["Contextual prospecting", "Broad audience expansion", "Cleaner retargeting exclusions"],
+  },
+  {
+    label: "KPIs",
+    items: ["CPA below target", "Higher CTR on prospecting creative", "Incremental conversion volume"],
+  },
+];
+
 function validateSections(items: DetailSection[]) {
   return items.every(
     (item) =>
@@ -532,6 +559,48 @@ function MetricTile({ label, value }: { label: string; value: number }) {
       <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-zinc-900">{value}</div>
     </div>
+  );
+}
+
+function ClientParametersCard() {
+  return (
+    <Card className="rounded-[28px] border-zinc-200 shadow-sm">
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3">
+              <Badge className="rounded-full bg-zinc-900 text-white hover:bg-zinc-900">Client inputs</Badge>
+              <Badge variant="outline" className="rounded-full">
+                Added outside Ads Manager
+              </Badge>
+            </div>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight">Anchor the audit to stated goals and success metrics</h2>
+            <p className="mt-3 text-sm leading-6 text-zinc-600">
+              This section gives clients a place to define what they are actually trying to achieve so the audit does
+              not rely only on campaign setup. That makes it easier to draw stronger conclusions on contextual
+              targeting, optimization choices, and measurement gaps against the right business objective.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 lg:max-w-xs">
+            Use these parameters to pressure-test whether the current Meta setup matches the intended strategy.
+          </div>
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          {clientParameterGroups.map((group) => (
+            <div key={group.label} className="rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{group.label}</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {group.items.map((item) => (
+                  <div key={item} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-700">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -641,23 +710,66 @@ function InsightList({
 function CreativeAdCard({ ad }: { ad: CreativeAd }) {
   const tone = ad.result === "Worked" ? "#10b981" : ad.result === "Mixed" ? "#f59e0b" : "#ef4444";
   const bg = ad.result === "Worked" ? "#ecfdf5" : ad.result === "Mixed" ? "#fffbeb" : "#fef2f2";
+  const visualTheme =
+    ad.result === "Worked"
+      ? {
+          gradient: "from-cyan-500 via-sky-500 to-emerald-400",
+          accent: "bg-white/20",
+          eyebrow: "Creator-led performance",
+          headline: "Contextual creative that lands the value fast",
+          cta: "See why it works",
+        }
+      : ad.result === "Mixed"
+        ? {
+            gradient: "from-amber-400 via-orange-400 to-rose-400",
+            accent: "bg-black/10",
+            eyebrow: "Offer-led carousel",
+            headline: "Strong browsing intent, weaker first-frame hook",
+            cta: "Refine concept",
+          }
+        : {
+            gradient: "from-slate-500 via-zinc-700 to-slate-900",
+            accent: "bg-white/10",
+            eyebrow: "Studio-led execution",
+            headline: "Polished visual, but less native to feed behavior",
+            cta: "Rework creative angle",
+          };
+
   return (
     <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
-      <div className="relative h-40 overflow-hidden border-b border-zinc-100 bg-zinc-100">
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 via-white to-zinc-200" />
-        <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/80 px-3 py-1 text-xs font-medium shadow-sm backdrop-blur">
+      <div className={`relative h-40 overflow-hidden border-b border-zinc-100 bg-gradient-to-br ${visualTheme.gradient}`}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.38),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.22),transparent_34%)]" />
+        <div className="absolute left-4 top-4 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-medium text-white shadow-sm backdrop-blur">
           {ad.format}
         </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          {ad.format.toLowerCase().includes("video") ? (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/85 shadow-lg">
-              <Play className="h-6 w-6 text-zinc-800" />
+        <div className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/92 p-2 shadow-lg">
+          <img src={cfLogoRed} alt="Channel Factory mark" className="max-h-full max-w-full object-contain" />
+        </div>
+        <div className="absolute inset-x-4 bottom-4 top-12 rounded-[22px] border border-white/25 bg-black/15 p-4 text-white shadow-2xl backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/75">
+              <span className={`h-2 w-2 rounded-full ${visualTheme.accent}`} />
+              {visualTheme.eyebrow}
             </div>
-          ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/85 shadow-lg">
-              <ImageIcon className="h-6 w-6 text-zinc-800" />
+            <div className="rounded-xl bg-white/92 px-2 py-1 shadow-sm">
+              <img src={cfLogoWordmark} alt="Channel Factory" className="h-3 w-auto object-contain" />
             </div>
-          )}
+          </div>
+          <div className="mt-3 max-w-[13rem] text-lg font-semibold leading-5">{visualTheme.headline}</div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-900 shadow-sm">
+              {visualTheme.cta}
+            </div>
+            {ad.format.toLowerCase().includes("video") ? (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg">
+                <Play className="h-4 w-4 text-zinc-900" />
+              </div>
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg">
+                <ImageIcon className="h-4 w-4 text-zinc-900" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className="p-4">
@@ -772,7 +884,6 @@ function ImpactHero({
 }: {
   item: DetailSection;
 }) {
-  const delta = item.projected - item.score;
   const pillarBreakdown = sections
     .filter((section) => section.id !== item.id)
     .map((section) => ({
@@ -785,48 +896,38 @@ function ImpactHero({
   return (
     <Card className="rounded-[32px] border-zinc-200 shadow-sm">
       <CardContent className="p-7">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-3">
-            <Badge className="rounded-full bg-rose-100 text-rose-700 hover:bg-rose-100">Impact score</Badge>
-            <Badge variant="outline" className="rounded-full">
-              Primary value driver
-            </Badge>
-          </div>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight">
-            Highlight the impact Channel Factory can create
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
-            This lead module brings the proprietary impact score above the rest of the audit so it becomes the
-            headline story: current impact from historical Meta activity, projected impact with Channel Factory
-            products, and the account score that supports that uplift.
-          </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricTile label="Current impact" value={item.score} />
-            <MetricTile label="Projected impact" value={item.projected} />
-            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Impact delta</div>
-              <div className="mt-2 text-2xl font-semibold text-emerald-600">+{delta}</div>
-              <div className="mt-1 text-sm text-zinc-500">Modeled uplift opportunity</div>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] xl:items-start">
+          <div>
+            <div className="flex items-center gap-3">
+              <Badge className="rounded-full bg-rose-100 text-rose-700 hover:bg-rose-100">Impact score</Badge>
+              <Badge variant="outline" className="rounded-full">
+                Aggregate rollup
+              </Badge>
             </div>
-            <div className="rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
-                Projected improvement mix
-              </div>
-              <div className="mt-3 space-y-2">
-                {pillarBreakdown.map((pillar) => (
-                  <div key={pillar.id} className="flex items-center justify-between gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: pillar.color }}
-                        aria-hidden
-                      />
-                      <span className="text-zinc-600">{pillar.title}</span>
-                    </div>
-                    <span className="font-medium text-zinc-900">+{pillar.uplift}</span>
+            <h2 className="mt-4 text-4xl font-semibold tracking-tight">
+              Highlight the impact Channel Factory can create
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
+              This lead module keeps the proprietary impact score as the headline story while positioning it as the
+              combined result of improvements across targeting, structure, creative, optimization, and measurement.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Projected improvement mix</div>
+            <div className="mt-4 space-y-3">
+              {pillarBreakdown.map((pillar) => (
+                <div key={pillar.id} className="flex items-center justify-between gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: pillar.color }}
+                      aria-hidden
+                    />
+                    <span className="text-zinc-600">{pillar.title}</span>
                   </div>
-                ))}
-              </div>
+                  <span className="font-medium text-zinc-900">+{pillar.uplift}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1219,6 +1320,7 @@ export default function App() {
         <div id="impact-hero">
           <ImpactHero item={impact} />
         </div>
+        <ClientParametersCard />
         <div className="space-y-6">
           <RadarRollup
             sections={safeSections}
