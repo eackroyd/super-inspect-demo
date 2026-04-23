@@ -102,6 +102,24 @@ type ClientParameterGroup = {
   items: string[];
 };
 
+type AuditMetricGroup = {
+  title: string;
+  subtitle: string;
+  items: string[];
+};
+
+type CreativeFatigueStatus = {
+  daysUntilFatigue: number;
+  status: "Healthy" | "Monitor closely" | "Refresh now";
+  summary: string;
+};
+
+type CreativeBreakdownMetric = {
+  label: string;
+  value: string;
+  note: string;
+};
+
 const supportingSections: DetailSection[] = [
   {
     id: "targeting",
@@ -119,18 +137,18 @@ const supportingSections: DetailSection[] = [
       "Over-fragmented audience strategy",
       "Audience overlap between ad sets",
       "Missing exclusion logic across audiences",
-      "Weak or inconsistent use of broad targeting",
+      "Broad targeting is used consistently where scale requires it",
       "Poor Lookalike Audience strategy",
       "Weak custom audience strategy",
       "Retargeting strategy lacks depth or recency logic",
       "Prospecting strategy relies too heavily on outdated interest logic",
-      "No clear relationship between audience type and funnel stage",
-      "Limited use of first-party data",
+      "Clear relationship between audience type and funnel stage is established",
+      "First-party data is actively used to strengthen audience quality",
       "No value-based audience strategy where relevant",
       "Inconsistent audience testing framework",
-      "Weak acquisition vs existing-customer separation",
-      "Retargeting pool quality is weak",
-      "Audience size is mismatched to budget or objective",
+      "Clear acquisition vs existing-customer separation",
+      "Retargeting pool quality is strong",
+      "Audience sizing is aligned with budget and campaign objective",
       "Customer journey coverage is incomplete",
     ],
   },
@@ -151,8 +169,8 @@ const supportingSections: DetailSection[] = [
       "Over-segmentation at campaign level",
       "Under-segmentation where control is needed",
       "Too many ad sets per campaign",
-      "Ad sets with budgets too low for their setup",
-      "Inconsistent use of CBO vs ABO",
+      "Ad set budgets are sufficient for the structure in place",
+      "CBO vs ABO usage is clearly matched to campaign purpose",
       "Testing structure mixed with scaling structure",
       "Legacy or redundant ad sets still active",
       "Funnel stages not structurally separated",
@@ -175,18 +193,18 @@ const supportingSections: DetailSection[] = [
     details: [
       "Limited creative mix",
       "Insufficient creative variation",
-      "Weak format strategy (image, video, collection, carousel)",
-      "Static vs video balance",
+      "Creative format strategy is well distributed across image, video, collection, and carousel",
+      "Static and video creative are balanced intentionally",
       "Weak hook strategy",
       "Messaging angles are too narrow",
       "Copy and text strategy is underdeveloped",
       "Creative strategy is too asset-led, not concept-led",
       "Little alignment between creative and funnel stage",
-      "Weak refresh cadence",
+      "Creative refresh cadence is proactive and consistent",
       "Low creative testing discipline",
       "Little use of social proof / credibility assets",
       "Brand and performance messaging are not balanced well",
-      "No clear creative winners identified or scaled",
+      "No creative winners identified or scaled",
       "Best-performing ads are concentrated too narrowly",
       "CTA strategy is repetitive or weak",
       "Creative built for one product, offer, or audience only",
@@ -208,18 +226,18 @@ const supportingSections: DetailSection[] = [
       "Optimization event is too low in the funnel for available volume",
       "Optimization event is too high in the funnel",
       "Optimization event selection is inconsistent across similar campaigns",
-      "No clear optimisation pathway or maturity model",
+      "Optimization pathway is clearly defined across testing and scale",
       "Too many ad sets/campaigns for the available signal",
       "Learning phase issues are persistent",
       "Too many changes made too often - reset learning",
       "Bid strategy is misaligned with account conditions",
       "Cost cap or bid cap targets do not reflect reality",
-      "Budget strategy does not support optimization",
+      "Budget strategy supports optimization stability",
       "Attribution thinking is weak or inconsistent",
       "Placements are constrained in a way that hurts optimization",
       "No value-based optimization logic where relevant",
       "Weak scaling logic",
-      "No clear optimization hierarchy",
+      "No optimization hierarchy",
       "Limited buyer involvement / weak hands-on optimization",
       "Optimization decisions appear reactive rather than strategic",
       "Structural optimisation is not ongoing",
@@ -238,19 +256,19 @@ const supportingSections: DetailSection[] = [
       "Covers pixel health, CAPI, event structure, optimization-event readiness, and signal completeness.",
     details: [
       "Pixel implementation appears incomplete or inconsistent",
-      "Pixel health appears weak",
+      "Pixel health is stable and reliable",
       "Key conversion events are missing",
       "Event setup is too shallow or too generic",
       "Events may be firing inaccurately",
       "Event prioritization is weak or unclear",
       "Custom conversions are missing or underused",
       "Custom conversions exist, but the logic is weak",
-      "CAPI is missing or not fully implemented",
+      "CAPI is fully implemented with dependable event coverage",
       "CAPI is implemented, but deduplication may be weak",
       "Event Match Quality is weak",
       "Value parameters are missing or unreliable",
       "Limited lead-quality or revenue-quality measurement",
-      "Funnel visibility is incomplete",
+      "Funnel visibility is complete across key stages",
       "Domain / web environment complexity is not fully covered",
       "Offline or CRM feedback loop is missing",
       "Audience-building measurement is weak",
@@ -542,6 +560,84 @@ const clientParameterGroups: ClientParameterGroup[] = [
   },
 ];
 
+const auditMetricGroups: AuditMetricGroup[] = [
+  {
+    title: "Primary performance metrics",
+    subtitle: "Use these as the default read for creative quality, delivery health, and conversion impact.",
+    items: ["Impressions", "CTR %", "Completion Rate %", "Conversions", "Attentive Seconds"],
+  },
+  {
+    title: "Video view metrics",
+    subtitle: "Add deeper video-consumption benchmarks when the account is running motion-heavy creative.",
+    items: ["View Through Rate", "ThruPlay Rate", "25% Video Rate", "50% Video Rate", "75% Video Rate", "100% Video Rate"],
+  },
+];
+
+const creativeFatigueStatus: CreativeFatigueStatus = {
+  daysUntilFatigue: 9,
+  status: "Monitor closely",
+  summary:
+    "Flag the account when the leading creative is projected to fall into fatigue within the next 7 days, mirroring the Creative AI watchout pattern.",
+};
+
+const creativeBreakdownMetrics: CreativeBreakdownMetric[] = [
+  {
+    label: "Impressions",
+    value: "1.82M",
+    note: "Delivery footprint across the current creative mix.",
+  },
+  {
+    label: "CTR %",
+    value: "1.74%",
+    note: "Primary thumb-stop read across active ads.",
+  },
+  {
+    label: "Completion Rate %",
+    value: "28.6%",
+    note: "Share of video views reaching completion.",
+  },
+  {
+    label: "Conversions",
+    value: "438",
+    note: "Attributed conversion volume from the active set.",
+  },
+  {
+    label: "Attentive Seconds",
+    value: "14.2s",
+    note: "Average sustained attention across video creative.",
+  },
+  {
+    label: "View Through Rate",
+    value: "34.8%",
+    note: "Share of served impressions that converted into a view.",
+  },
+  {
+    label: "ThruPlay Rate",
+    value: "22.4%",
+    note: "Rate of video views reaching the ThruPlay threshold.",
+  },
+  {
+    label: "25% Video Rate",
+    value: "61.7%",
+    note: "Audience retention through the first quarter of the video.",
+  },
+  {
+    label: "50% Video Rate",
+    value: "43.5%",
+    note: "Midpoint retention across the active video set.",
+  },
+  {
+    label: "75% Video Rate",
+    value: "31.2%",
+    note: "Retention into the final stretch of the video.",
+  },
+  {
+    label: "100% Video Rate",
+    value: "18.9%",
+    note: "Completion depth for the strongest-performing video assets.",
+  },
+];
+
 function validateSections(items: DetailSection[]) {
   return items.every(
     (item) =>
@@ -562,6 +658,74 @@ function MetricTile({ label, value }: { label: string; value: number }) {
   );
 }
 
+function MetricChip({ label }: { label: string }) {
+  return (
+    <div className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm">
+      {label}
+    </div>
+  );
+}
+
+function CreativeFatigueCard({ status }: { status: CreativeFatigueStatus }) {
+  const tone =
+    status.status === "Healthy" ? "#10b981" : status.status === "Monitor closely" ? "#f59e0b" : "#ef4444";
+  const bg =
+    status.status === "Healthy" ? "#ecfdf5" : status.status === "Monitor closely" ? "#fffbeb" : "#fef2f2";
+
+  return (
+    <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Creative fatigue</div>
+          <div className="mt-2 text-3xl font-semibold text-zinc-900">{status.daysUntilFatigue} days</div>
+        </div>
+        <div className="rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: bg, color: tone }}>
+          {status.status}
+        </div>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-zinc-600">{status.summary}</p>
+    </div>
+  );
+}
+
+function CreativeBreakdownCard({
+  metrics,
+  status,
+}: {
+  metrics: CreativeBreakdownMetric[];
+  status: CreativeFatigueStatus;
+}) {
+  const tone =
+    status.status === "Healthy" ? "#10b981" : status.status === "Monitor closely" ? "#f59e0b" : "#ef4444";
+  const bg =
+    status.status === "Healthy" ? "#ecfdf5" : status.status === "Monitor closely" ? "#fffbeb" : "#fef2f2";
+
+  return (
+    <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-zinc-900">Creative breakdown</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            Core creative metrics and fatigue timing for the current leading asset set.
+          </p>
+        </div>
+        <div className="rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: bg, color: tone }}>
+          {status.daysUntilFatigue} days until fatigue
+        </div>
+      </div>
+      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {metrics.map((item) => (
+          <div key={item.label} className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-4">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{item.label}</div>
+            <div className="mt-2 text-2xl font-semibold text-zinc-900">{item.value}</div>
+            <p className="mt-2 text-sm leading-6 text-zinc-600">{item.note}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ClientParametersCard() {
   return (
     <Card className="rounded-[28px] border-zinc-200 shadow-sm">
@@ -578,7 +742,8 @@ function ClientParametersCard() {
             <p className="mt-3 text-sm leading-6 text-zinc-600">
               This section gives clients a place to define what they are actually trying to achieve so the audit does
               not rely only on campaign setup. That makes it easier to draw stronger conclusions on contextual
-              targeting, optimization choices, and measurement gaps against the right business objective.
+              targeting, optimization choices, measurement gaps, and the creative metrics we want to trend against the
+              right business objective.
             </p>
           </div>
           <div className="rounded-3xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 lg:max-w-xs">
@@ -598,6 +763,20 @@ function ClientParametersCard() {
               </div>
             </div>
           ))}
+        </div>
+        <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
+          {auditMetricGroups.map((group) => (
+            <div key={group.title} className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{group.title}</div>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">{group.subtitle}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {group.items.map((item) => (
+                  <MetricChip key={item} label={item} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <CreativeFatigueCard status={creativeFatigueStatus} />
         </div>
       </CardContent>
     </Card>
@@ -974,8 +1153,43 @@ function RadarTooltip({
 }
 
 function getAssessmentResult(detail: string) {
-  const passSignals = [/strong/i, /clear/i, /effective/i, /healthy/i, /complete/i, /balanced/i];
-  return passSignals.some((pattern) => pattern.test(detail)) ? "pass" : "fail";
+  const normalized = detail.toLowerCase();
+  const failSignals = [
+    "incomplete",
+    "missing",
+    "weak",
+    "poor",
+    "limited",
+    "over-reliance",
+    "over-fragmented",
+    "lacks",
+    "misaligned",
+    "underdeveloped",
+    "unclear",
+    "inaccurately",
+    "too many",
+    "too low",
+    "too high",
+    "reducing",
+    "reactive",
+    "redundant",
+    "concentrated too narrowly",
+    "not balanced",
+    "not ongoing",
+  ];
+  const passSignals = [
+    "strong",
+    "clear",
+    "effective",
+    "healthy",
+    "complete",
+    "balanced",
+    "well distributed"
+  ];
+
+  if (failSignals.some((signal) => normalized.includes(signal))) return "fail";
+  if (passSignals.some((signal) => normalized.includes(signal))) return "pass";
+  return "fail";
 }
 
 function DefaultExpandedPanel({ section }: { section: DetailSection }) {
@@ -1091,10 +1305,15 @@ function SectionExpandedPanel({ section }: { section: DetailSection }) {
         subtitle={cfg.breakdownSubtitle}
       />
     ) : null;
+  const creativeBreakdownBlock =
+    section.id === "creative" ? (
+      <CreativeBreakdownCard metrics={creativeBreakdownMetrics} status={creativeFatigueStatus} />
+    ) : null;
   return (
     <div className="space-y-5">
       <div className="space-y-4">
         {leadBlock}
+        {creativeBreakdownBlock}
         {breakdownBlock}
       </div>
       {cfg.insights && cfg.insightIcon && (cfg.leadCards || cfg.creativeAds) ? (
