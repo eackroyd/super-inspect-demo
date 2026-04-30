@@ -70,6 +70,8 @@ type CreativeAd = {
   score: number;
   metric: string;
   insight: string;
+  breakdownMetrics: CreativeBreakdownMetric[];
+  fatigueStatus: CreativeFatigueStatus;
 };
 
 type RadarDatum = {
@@ -315,6 +317,19 @@ const creativeAds: CreativeAd[] = [
     metric: "1.9x CTR vs avg",
     insight:
       "Fast product demonstration, native framing, and direct value hook drove stronger thumb-stop and lower CPA.",
+    breakdownMetrics: [
+      { label: "Impressions", value: "680K", note: "Highest delivery in the current active set." },
+      { label: "CTR %", value: "2.31%", note: "1.9x above account average — strong thumb-stop." },
+      { label: "Completion Rate", value: "41.2%", note: "Well above norm for Reels placements." },
+      { label: "Conversions", value: "187", note: "Leads conversion volume in the set." },
+      { label: "Attentive Seconds", value: "18.4s", note: "Sustained attention across the full hook sequence." },
+      { label: "ThruPlay Rate", value: "28.3%", note: "Strong video completion for a 30s format." },
+    ],
+    fatigueStatus: {
+      daysUntilFatigue: 14,
+      status: "Healthy",
+      summary: "Frequency and CTR trend both stable. This creative has runway — no refresh needed yet.",
+    },
   },
   {
     id: "ad-2",
@@ -325,6 +340,19 @@ const creativeAds: CreativeAd[] = [
     metric: "+24% CVR",
     insight:
       "Credibility-led narrative and proof points connected well with mid-funnel retargeting audiences.",
+    breakdownMetrics: [
+      { label: "Impressions", value: "420K", note: "Solid delivery concentrated in retargeting ad sets." },
+      { label: "CTR %", value: "1.88%", note: "Above average, driven by mid-funnel audience intent." },
+      { label: "Completion Rate", value: "35.7%", note: "Good retention given a longer narrative format." },
+      { label: "Conversions", value: "156", note: "Strong CVR uplift vs prospecting creative." },
+      { label: "Attentive Seconds", value: "16.1s", note: "Audience staying with the credibility narrative." },
+      { label: "ThruPlay Rate", value: "22.6%", note: "Respectable for Stories placement length." },
+    ],
+    fatigueStatus: {
+      daysUntilFatigue: 11,
+      status: "Monitor closely",
+      summary: "Frequency is climbing in the retargeting pool. Watch CTR trend over the next 5 days before rotating.",
+    },
   },
   {
     id: "ad-3",
@@ -335,6 +363,19 @@ const creativeAds: CreativeAd[] = [
     metric: "-31% CTR",
     insight:
       "Too polished and product-led; weak hook and low contextual relevance compared with looser creator formats.",
+    breakdownMetrics: [
+      { label: "Impressions", value: "380K", note: "Sufficient delivery to draw a clear read." },
+      { label: "CTR %", value: "0.91%", note: "31% below account average — weak thumb-stop." },
+      { label: "Completion Rate", value: "N/A", note: "Static format — no video completion signal." },
+      { label: "Conversions", value: "42", note: "Low conversion volume at high cost-per-result." },
+      { label: "Attentive Seconds", value: "6.2s", note: "Audience scrolling past without engaging." },
+      { label: "CPA vs target", value: "+58%", note: "CPA significantly above target — pausing recommended." },
+    ],
+    fatigueStatus: {
+      daysUntilFatigue: 3,
+      status: "Refresh now",
+      summary: "CTR declining steadily and CPA is well above target. This asset should be paused and replaced.",
+    },
   },
   {
     id: "ad-4",
@@ -345,6 +386,19 @@ const creativeAds: CreativeAd[] = [
     metric: "+8% ATC",
     insight:
       "Useful for browsing behavior but lacked a strong first-card hook and clear hierarchy across frames.",
+    breakdownMetrics: [
+      { label: "Impressions", value: "340K", note: "Moderate delivery with stable pacing." },
+      { label: "CTR %", value: "1.41%", note: "Near average — first-frame weakness limits thumb-stop." },
+      { label: "Swipe Rate", value: "34.7%", note: "Reasonable card-level exploration among engaged viewers." },
+      { label: "Conversions", value: "53", note: "Add-to-cart uplift but low downstream conversion rate." },
+      { label: "Attentive Seconds", value: "9.8s", note: "Browsing intent detected but not converting to action." },
+      { label: "Card 1 CTR", value: "0.84%", note: "First card is underperforming — hook needs strengthening." },
+    ],
+    fatigueStatus: {
+      daysUntilFatigue: 7,
+      status: "Monitor closely",
+      summary: "Engagement is plateauing. Consider refreshing the first card creative before frequency accelerates fatigue.",
+    },
   },
 ];
 
@@ -691,9 +745,11 @@ function CreativeFatigueCard({ status }: { status: CreativeFatigueStatus }) {
 function CreativeBreakdownCard({
   metrics,
   status,
+  creativeName,
 }: {
   metrics: CreativeBreakdownMetric[];
   status: CreativeFatigueStatus;
+  creativeName?: string;
 }) {
   const tone =
     status.status === "Healthy" ? "#10b981" : status.status === "Monitor closely" ? "#f59e0b" : "#ef4444";
@@ -704,13 +760,22 @@ function CreativeBreakdownCard({
     <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-zinc-900">Creative breakdown</p>
+          <p className="text-sm font-medium text-zinc-900">
+            {creativeName ? creativeName : "Creative breakdown"}
+          </p>
           <p className="mt-1 text-sm text-zinc-500">
-            Core creative metrics and fatigue timing for the current leading asset set.
+            {creativeName
+              ? "Performance metrics and fatigue read for this creative."
+              : "Core creative metrics and fatigue timing for the current leading asset set."}
           </p>
         </div>
-        <div className="rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: bg, color: tone }}>
-          {status.daysUntilFatigue} days until fatigue
+        <div className="flex items-center gap-2">
+          <div className="rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: bg, color: tone }}>
+            {status.status}
+          </div>
+          <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600">
+            {status.daysUntilFatigue}d until fatigue
+          </div>
         </div>
       </div>
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -726,7 +791,27 @@ function CreativeBreakdownCard({
   );
 }
 
+const defaultSelectedItems = new Set([
+  "Scale qualified new-customer acquisition",
+  "Improve blended CPA efficiency",
+  "Contextual prospecting",
+  "Broad audience expansion",
+  "CPA below target",
+  "Higher CTR on prospecting creative",
+]);
+
 function ClientParametersCard() {
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(defaultSelectedItems);
+
+  const toggleItem = (item: string) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(item)) next.delete(item);
+      else next.add(item);
+      return next;
+    });
+  };
+
   return (
     <Card className="rounded-[28px] border-zinc-200 shadow-sm">
       <CardContent className="p-6">
@@ -754,12 +839,25 @@ function ClientParametersCard() {
           {clientParameterGroups.map((group) => (
             <div key={group.label} className="rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm">
               <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">{group.label}</div>
+              <p className="mt-1.5 text-xs text-zinc-400">Select all that apply</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {group.items.map((item) => (
-                  <div key={item} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-700">
-                    {item}
-                  </div>
-                ))}
+                {group.items.map((item) => {
+                  const isSelected = selectedItems.has(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleItem(item)}
+                      className={`rounded-full border px-3 py-1.5 text-sm transition-all ${
+                        isSelected
+                          ? "border-zinc-900 bg-zinc-900 text-white shadow-sm"
+                          : "border-zinc-200 bg-zinc-50 text-zinc-400 hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-600"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -886,7 +984,15 @@ function InsightList({
   );
 }
 
-function CreativeAdCard({ ad }: { ad: CreativeAd }) {
+function CreativeAdCard({
+  ad,
+  isSelected,
+  onSelect,
+}: {
+  ad: CreativeAd;
+  isSelected?: boolean;
+  onSelect?: () => void;
+}) {
   const tone = ad.result === "Worked" ? "#10b981" : ad.result === "Mixed" ? "#f59e0b" : "#ef4444";
   const bg = ad.result === "Worked" ? "#ecfdf5" : ad.result === "Mixed" ? "#fffbeb" : "#fef2f2";
   const visualTheme =
@@ -915,7 +1021,14 @@ function CreativeAdCard({ ad }: { ad: CreativeAd }) {
           };
 
   return (
-    <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
+    <div
+      className={`overflow-hidden rounded-[24px] border bg-white shadow-sm transition-all ${onSelect ? "cursor-pointer" : ""}`}
+      style={{ borderColor: isSelected ? tone : "#e4e4e7", boxShadow: isSelected ? `0 0 0 2px ${tone}40` : undefined }}
+      onClick={onSelect}
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={onSelect ? (e) => e.key === "Enter" && onSelect() : undefined}
+    >
       <div className={`relative h-40 overflow-hidden border-b border-zinc-100 bg-gradient-to-br ${visualTheme.gradient}`}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.38),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.22),transparent_34%)]" />
         <div className="absolute left-4 top-4 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-medium text-white shadow-sm backdrop-blur">
@@ -1251,7 +1364,14 @@ function DefaultExpandedPanel({ section }: { section: DetailSection }) {
 
 function SectionExpandedPanel({ section }: { section: DetailSection }) {
   const cfg = panelConfigs[section.id];
+  const [selectedCreativeId, setSelectedCreativeId] = useState<string>(
+    () => cfg?.creativeAds?.[0]?.id ?? ""
+  );
+
   if (!cfg) return <DefaultExpandedPanel section={section} />;
+
+  const selectedCreative = cfg.creativeAds?.find((ad) => ad.id === selectedCreativeId) ?? cfg.creativeAds?.[0];
+
   const leadBlock = cfg.creativeAds ? (
     <div className="rounded-[28px] border border-zinc-100 bg-zinc-50/70 p-5">
       <div className="mb-4 flex items-center justify-between gap-4">
@@ -1263,9 +1383,15 @@ function SectionExpandedPanel({ section }: { section: DetailSection }) {
           {cfg.badge}
         </Badge>
       </div>
+      <p className="mb-3 text-xs text-zinc-400">Select a creative to see its breakdown and fatigue read below.</p>
       <div className="grid gap-4 md:grid-cols-2">
         {cfg.creativeAds.map((ad) => (
-          <CreativeAdCard key={ad.id} ad={ad} />
+          <CreativeAdCard
+            key={ad.id}
+            ad={ad}
+            isSelected={selectedCreativeId === ad.id}
+            onSelect={() => setSelectedCreativeId(ad.id)}
+          />
         ))}
       </div>
     </div>
@@ -1306,8 +1432,12 @@ function SectionExpandedPanel({ section }: { section: DetailSection }) {
       />
     ) : null;
   const creativeBreakdownBlock =
-    section.id === "creative" ? (
-      <CreativeBreakdownCard metrics={creativeBreakdownMetrics} status={creativeFatigueStatus} />
+    section.id === "creative" && selectedCreative ? (
+      <CreativeBreakdownCard
+        metrics={selectedCreative.breakdownMetrics}
+        status={selectedCreative.fatigueStatus}
+        creativeName={selectedCreative.title}
+      />
     ) : null;
   return (
     <div className="space-y-5">
